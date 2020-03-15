@@ -1,46 +1,19 @@
-# import keras
 import matplotlib.pyplot as plt
 import random
 import numpy as np
 
-# some helper functions
-def size(population):
-    anykey = list(population.keys())[0]
-    return len(population[anykey])
-def empty_like(population):
-    ret = {}
-    for key in population.keys():
-        ret[key] = []
-    return ret
-
-# mutation models
-class mutation_model:
-    def __init__(self):
-        pass
-    def train(self, history):
-        pass
-    def mutate(self, population):
-        pass
-class toy_model(mutation_model):
-    def _train(self, x, y):
-        pass
-class random_model(mutation_model):
-    def mutate(self, population):
-        mutant = empty_like(population)
-        for i in range(size(population)):
-            for key in population.keys():
-                mutant[key].append(population[key][i] + (np.random.random()-0.5)*evolution_rate)
-        return mutant
+from helper import *
+from mutation_models import *
 
 # toy problem setting
 random.seed(2)
 np.random.seed(2)
 population_size = 4
-desired_point = {"x":np.random.random()*100, "y":np.random.random()*100}
+desired_point = {"x0":np.random.random()*100, "x1":np.random.random()*100}
 evolution_rate = 1
 total_generation = 100
 full_history = {}
-mutation_models = [random_model(), random_model()]
+mutation_models = [toy_model(evolution_rate), random_model(evolution_rate)]
 
 # compare the behaviors of two mutation models
 for mutation_model in mutation_models:
@@ -48,20 +21,20 @@ for mutation_model in mutation_models:
     np.random.seed(1)
 
     # randomly init population
-    population = {"x": [], "y": []}
+    population = {"x0": [], "x1": []}
     for i in range(population_size):
-        population["x"].append(np.random.random()*100)
-        population["y"].append(np.random.random()*100)
+        population["x0"].append(np.random.random()*100)
+        population["x1"].append(np.random.random()*100)
 
     generation = 0
-    plt.scatter(population["x"], population["y"], c="blue", s=80, label="start position")
+    plt.scatter(population["x0"], population["x1"], c="blue", s=80, label="start position")
     for i in range(total_generation):
         # evaluation
         results = []
         for i in range(size(population)):
-            ret = -np.sqrt((population["x"][i] - desired_point["x"])**2 + (population["y"][i] - desired_point["y"])**2)
+            ret = -np.sqrt((population["x0"][i] - desired_point["x0"])**2 + (population["x1"][i] - desired_point["x1"])**2)
             results.append(ret)
-            full_history[(population["x"][i], population["y"][i])] = ret
+            full_history[(population["x0"][i], population["x1"][i])] = ret
         mutation_model.train(full_history)
 
         sorted_index = np.argsort(results)[::-1]
@@ -82,12 +55,14 @@ for mutation_model in mutation_models:
                 next_generation[key].append( mutant1[key][i] )
                 next_generation[key].append( mutant2[key][i] )
 
-        plt.scatter(next_generation["x"], next_generation["y"], c=f"{0.8*(1-generation/total_generation)}", s=1)
+        plt.scatter(next_generation["x0"], next_generation["x1"], c=f"{0.8*(1-generation/total_generation)}", s=1)
         population = next_generation
         generation += 1
         
-    plt.scatter(next_generation["x"], next_generation["y"], c="green", s=80, label="final position")
+    plt.scatter(next_generation["x0"], next_generation["x1"], c="green", s=80, label="final position")
 
-    plt.scatter(desired_point["x"], desired_point["y"], c="red", s=80, label="desired point")
+    plt.scatter(desired_point["x0"], desired_point["x1"], c="red", s=80, label="desired point")
     plt.legend()
+    plt.xlabel("x0")
+    plt.ylabel("x1")
     plt.show()
