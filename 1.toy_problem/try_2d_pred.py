@@ -79,11 +79,13 @@ colors = ["red", "blue", "green", "orange", "purple"]
 xx = range(len(history[0]))
 yy = [0.5] * len(history[0])
 yy1 = [-1.88] * len(history1[0])
-plt.plot(xx,yy,label="truth", linewidth=1)
-plt.plot(xx,yy1,label="truth1", linewidth=1)
+plt.plot(xx,yy,label="truth for x[0]", color="#FF3322", linewidth=2)
+plt.plot(xx,yy1,label="truth for x[1]", color="#FF3322", linewidth=2)
 for j in range(5):
     plt.plot(xx, history[j],  c=colors[j],  linewidth=1)
     plt.plot(xx, history1[j],  c=colors[j],  linewidth=1)
 plt.legend()
+plt.ylabel("x[0] and x[1]")
+plt.xlabel("epoch")
 plt.show()
 
