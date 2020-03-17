@@ -4,20 +4,25 @@ import torch.nn.functional as F
 import torch.optim as optim
 import matplotlib.pyplot as plt
 import matplotlib
+# make experiments reproducible
 torch.manual_seed(1)
 
 device = "cpu"
 
+# define the simulation
 def simulation(x):
     """ run simulation with input x, produce lable y"""
     y = ((x-target)**2).sum(1).view(-1,1)
     return y
 
-
+# define the target
 target = torch.tensor([0.5, -1.88], device=device)
 print("target", target)
+
+# start from random x
 x = torch.randn([100,2], device=device, requires_grad=True)
 
+# define a neural network (Layers: 1->32->32->1)
 class Net(nn.Module):
     def __init__(self):
         num_neurons = 32
@@ -32,16 +37,11 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
-    def predict(self, x):
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        # x = self.dropout(x)
-        x = self.fc3(x)
-        return x
-
 
 model = Net().to(device=device)
 optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+
+mutation_rate = 0.5
 
 history = {}
 history1 = {}
@@ -68,27 +68,22 @@ for i in range(300):
         loss_x = y_hat.mean()
         loss_x.backward(retain_graph=True)
         with torch.no_grad():
-            x -= 0.5 * x.grad
+            x -= mutation_rate * x.grad
         x.grad.zero_()
         for j in range(5):
             history[j].append(x.detach().numpy()[j][0])
             history1[j].append(x.detach().numpy()[j][1])
-    
-colors = ["red", "blue", "green", "orange", "purple"]
 
+# Plot the results
+colors = ["red", "blue", "green", "orange", "purple"]
 xx = range(len(history[0]))
 yy = [0.5] * len(history[0])
 yy1 = [-1.88] * len(history1[0])
 plt.plot(xx,yy,label="truth", linewidth=1)
 plt.plot(xx,yy1,label="truth1", linewidth=1)
-# yy = {}
-# for j in range(5):
-#     yy[j] = [ y.detach().numpy()[j][0] ] * len(history[0])
 for j in range(5):
-    # plt.scatter(xx, yy[j], c=colors[j], label=f"truth {j}", s=1)
     plt.plot(xx, history[j],  c=colors[j],  linewidth=1)
     plt.plot(xx, history1[j],  c=colors[j],  linewidth=1)
 plt.legend()
 plt.show()
 
-# print("truth:", y)
